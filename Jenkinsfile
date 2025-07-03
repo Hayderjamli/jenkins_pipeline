@@ -6,7 +6,7 @@ pipeline {
         IMAGE_TAG = "latest"
         REGISTRY = "localhost:8082"     // 🔁 Change to your Nexus Docker Registry
         DOCKER_CREDENTIALS_ID = "nexus-credentials"  // 👈 Matches the ID you created
-        NEXUS_IP = '172.24.0.4'
+        NEXUS_IP = '172.22.0.8'
     }
 
     
@@ -52,7 +52,7 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                sh 'docker-compose down && docker-compose up -d --build'
+                sh 'docker-compose up -d --build'
             }
         }
     }
