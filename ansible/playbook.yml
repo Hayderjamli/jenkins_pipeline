@@ -1,0 +1,11 @@
+# ansible/playbook.yml
+- hosts: k8s_nodes
+  become: yes
+  tasks:
+    - name: Install kubeadm
+      apt:
+        name: kubeadm
+        state: present
+    - name: Initialize cluster
+      command: kubeadm init --pod-network-cidr=10.244.0.0/16
+      when: inventory_hostname == "master"

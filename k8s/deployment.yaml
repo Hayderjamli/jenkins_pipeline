@@ -1,0 +1,49 @@
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-boilerplatevf
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fastapi-boilerplatevf
+  template:
+    metadata:
+      labels:
+        app: fastapi-boilerplatevf
+    spec:
+      containers:
+      - name: fastapi
+        image: https://your-nexus-url/repository/docker-hosted/fastapi_boilerplatevf:$CI_COMMIT_SHA
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-boilerplatevf
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: fastapi-boilerplatevf
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fastapi-boilerplatevf-ingress
+spec:
+  rules:
+  - host: fastapi.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fastapi-boilerplatevf
+            port:
+              number: 8000

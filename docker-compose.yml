@@ -1,0 +1,133 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+    depends_on:
+      - db
+      - redis
+      - elasticsearch
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST}
+      - ELASTICSEARCH_PORT=${ELASTICSEARCH_PORT}
+    networks:
+      - backend
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+
+  elasticsearch:
+    image: elasticsearch:8.7.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - backend
+
+  jenkins:
+    image: jenkins/jenkins:jdk21
+    container_name: jenkins-ci
+    privileged: true
+    user: root
+    ports:
+      - "8100:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/docker/daemon.json:/etc/docker/daemon.json
+    command: bash -c "curl -fsSL https://get.docker.com | sh && /usr/local/bin/jenkins.sh"
+    networks:
+      - backend
+      - sonarnet  # ← Add this
+    
+ 
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus-ci
+    ports:
+      - "8082:8081"   # for web UI
+      - "5000:5000"   # for Docker repo
+    volumes:
+      - ./nexus-data:/nexus-data
+    networks:
+      - backend 
+    hostname: nexus
+    
+
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube-ci
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+    networks:
+      - sonarnet  # ← Add this
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - backend
+  
+volumes:
+  postgres_data:
+  redis_data:
+  es_data:
+  sonarqube_data:
+  jenkins_home:
+
+networks:
+  backend:
+    driver: bridge
+  sonarnet:  # ← Define the network
+    driver: bridge

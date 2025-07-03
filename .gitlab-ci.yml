@@ -1,0 +1,79 @@
+stages:
+  - build
+  - test
+  - release
+  - deploy
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE/fastapi_boilerplatev3:$CI_COMMIT_SHA
+  SONAR_PROJECT_KEY: "fastapi-boilerplate"
+  SONAR_HOST_URL: "http://localhost:9000"
+  NEXUS_DOCKER_REPO: "nexus:8081/repository/docker-hosted"
+  NEXUS_RAW_REPO: "nexus:8081/repository/raw-hosted"
+
+# BUILD
+build:
+  stage: build
+  image: docker:20.10
+  services:
+    - docker:dind
+  before_script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+  only:
+    - main
+    - branches
+
+# TEST + SONARQUBE
+test:
+  stage: test
+  image: python:3.11
+  script:
+    - pip install -r requirements.txt
+    - pytest tests/ --junitxml=report.xml
+
+    - apt-get update && apt-get install -y curl unzip openjdk-17-jre
+    - curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+    - unzip sonar-scanner.zip
+
+    - ./sonar-scanner-*/bin/sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=. -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.SONAR_TOKEN=$SONAR_TOKEN -Dsonar.scanner.skipSystemTruststore=true -X
+  
+ 
+# RELEASE
+release:
+  stage: release
+  image: docker:20.10
+  services:
+    - docker:dind
+  before_script:
+    - docker info
+  script:
+    # Docker login
+    - echo "$NEXUS_PASSWORD" | docker login "$NEXUS_DOCKER_REPO" --username "$NEXUS_USERNAME" --password-stdin
+    - docker pull $DOCKER_IMAGE
+    - docker tag $DOCKER_IMAGE $NEXUS_DOCKER_REPO/fastapi_boilerplatev3:$CI_COMMIT_SHA
+    - docker push $NEXUS_DOCKER_REPO/fastapi_boilerplatev3:$CI_COMMIT_SHA
+  only:
+    - tags
+
+# DEPLOY
+deploy:
+  stage: deploy
+  image: docker/compose:1.29.2
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - docker:dind
+  before_script:
+    - docker info
+  script:
+    - echo "$NEXUS_PASSWORD" | docker login "$NEXUS_DOCKER_REPO" --username "$NEXUS_USERNAME" --password-stdin
+    - docker pull $NEXUS_DOCKER_REPO/fastapi_boilerplatev3:$CI_COMMIT_SHA
+    - docker-compose down || true
+    - docker-compose up -d
+  only:
+    - tags
