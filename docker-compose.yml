@@ -73,7 +73,9 @@ services:
     networks:
       - backend
       - sonarnet  # ← Add this
-    
+    extra_hosts:
+      - "nexus:${NEXUS_IP}"
+
  
   nexus:
     image: sonatype/nexus3
