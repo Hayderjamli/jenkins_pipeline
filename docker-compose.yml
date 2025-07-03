@@ -102,24 +102,7 @@ services:
     networks:
       - sonarnet  # ← Add this
 
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - /var/jenkins_home/workspace/fastapi/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - backend
-
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    networks:
-      - backend
+ 
   
 volumes:
   postgres_data:
