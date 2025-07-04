@@ -2,9 +2,9 @@ services:
   app:
     image: localhost:5000/app-1:latest
     ports:
-      - "8000:8000"
-      - "8001:8001"
-      - "8002:8002"
+      - "8800:8000"
+      - "8801:8001"
+      - "8802:8002"
     depends_on:
       - db
       - redis
