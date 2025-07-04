@@ -7,9 +7,9 @@ services:
       - "8801:8001"
       - "8802:8002"
     depends_on:
-      - db-2
-      - redis-2
-      - elasticsearch-2
+      - db-1
+      - redis-1
+      - elasticsearch-1
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -22,9 +22,8 @@ services:
     networks:
       - backend
 
-  db:
+  db-1:
     image: postgres:15
-    container_name: db-2
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -36,9 +35,8 @@ services:
     networks:
       - backend
 
-  redis:
+  redis-1:
     image: redis:7
-    container_name: redis-2
     ports:
       - "6380:6379"
     volumes:
@@ -46,9 +44,8 @@ services:
     networks:
       - backend
 
-  elasticsearch:
+  elasticsearch-1:
     image: elasticsearch:8.7.0
-    container_name: elasticsearch-2
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
