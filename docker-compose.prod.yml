@@ -1,6 +1,6 @@
 services:
   app:
-    image: nexus.example.com/my-fastapi-app:${IMAGE_TAG}
+    image: nexus:5000/docker-hosted:app-1
     ports:
       - "8000:8000"
       - "8001:8001"
