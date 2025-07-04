@@ -6,9 +6,9 @@ services:
       - "8801:8001"
       - "8802:8002"
     depends_on:
-      - db
-      - redis
-      - elasticsearch
+      - db-1
+      - redis-1
+      - elasticsearch-1
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
