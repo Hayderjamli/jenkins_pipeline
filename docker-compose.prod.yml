@@ -17,7 +17,7 @@ services:
       - POSTGRES_USER=admin1
       - POSTGRES_PASSWORD=secret1
       - POSTGRES_DB=company_db1
-      - POSTGRES_HOST=db1
+      - POSTGRES_HOST=db
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST}
