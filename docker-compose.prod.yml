@@ -14,10 +14,10 @@ services:
       elasticsearch:
         condition: service_started
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=company_db
-      - POSTGRES_HOST=db
+      - POSTGRES_USER=admin1
+      - POSTGRES_PASSWORD=secret1
+      - POSTGRES_DB=company_db1
+      - POSTGRES_HOST=db1
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST}
@@ -28,9 +28,9 @@ services:
   db:
     image: postgres:15
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=company_db 
+      - POSTGRES_USER=admin1
+      - POSTGRES_PASSWORD=secret1
+      - POSTGRES_DB=company_db1
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
